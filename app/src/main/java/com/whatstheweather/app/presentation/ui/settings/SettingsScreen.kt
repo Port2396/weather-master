@@ -138,7 +138,7 @@ fun SettingsScreen(
                         Spacer(Modifier.width(12.dp))
                         Column {
                             Text("Advanced Settings", style = MaterialTheme.typography.titleMedium, color = Color.White)
-                            Text("API provider, cache & keys", style = MaterialTheme.typography.bodySmall, color = Color.White.copy(0.55f))
+                            Text("API provider & keys", style = MaterialTheme.typography.bodySmall, color = Color.White.copy(0.55f))
                         }
                     }
                     Icon(
@@ -206,17 +206,6 @@ fun SettingsScreen(
                             )
                         }
 
-                        Divider(color = Color.White.copy(0.1f))
-
-                        // Cache duration
-                        Text("Cache Duration", style = MaterialTheme.typography.labelLarge, color = Color.White.copy(0.65f))
-                        SegmentedRow(
-                            label = "Refresh every",
-                            icon = Icons.Outlined.Cached,
-                            options = listOf("15 min", "30 min", "1 hour"),
-                            selected = when (settings.cacheMinutes) { 15 -> 0; 30 -> 1; else -> 2 },
-                            onSelect = { viewModel.updateSettings(settings.copy(cacheMinutes = when(it) { 0 -> 15; 1 -> 30; else -> 60 })) }
-                        )
                     }
                 }
             }

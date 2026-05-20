@@ -15,6 +15,5 @@ data class AppSettings(
     val openWeatherMapApiKey: String = "",
     val weatherApiKey: String = "",
     val tomorrowApiKey: String = "",
-    val cacheMinutes: Int = 30,
     val notificationsEnabled: Boolean = false
 )

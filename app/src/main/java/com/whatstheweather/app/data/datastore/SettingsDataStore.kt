@@ -27,7 +27,6 @@ class SettingsDataStore @Inject constructor(
         val OWM_API_KEY = stringPreferencesKey("owm_api_key")
         val WEATHER_API_KEY = stringPreferencesKey("weather_api_key")
         val TOMORROW_API_KEY = stringPreferencesKey("tomorrow_api_key")
-        val CACHE_MINUTES = intPreferencesKey("cache_minutes")
         val NOTIFICATIONS = booleanPreferencesKey("notifications")
     }
 
@@ -43,7 +42,6 @@ class SettingsDataStore @Inject constructor(
                 openWeatherMapApiKey = prefs[Keys.OWM_API_KEY] ?: "",
                 weatherApiKey = prefs[Keys.WEATHER_API_KEY] ?: "",
                 tomorrowApiKey = prefs[Keys.TOMORROW_API_KEY] ?: "",
-                cacheMinutes = prefs[Keys.CACHE_MINUTES] ?: 30,
                 notificationsEnabled = prefs[Keys.NOTIFICATIONS] ?: false
             )
         }
@@ -58,7 +56,6 @@ class SettingsDataStore @Inject constructor(
             prefs[Keys.OWM_API_KEY] = settings.openWeatherMapApiKey
             prefs[Keys.WEATHER_API_KEY] = settings.weatherApiKey
             prefs[Keys.TOMORROW_API_KEY] = settings.tomorrowApiKey
-            prefs[Keys.CACHE_MINUTES] = settings.cacheMinutes
             prefs[Keys.NOTIFICATIONS] = settings.notificationsEnabled
         }
     }

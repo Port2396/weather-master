@@ -8,8 +8,10 @@ import androidx.lifecycle.viewModelScope
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import com.google.android.gms.tasks.CancellationTokenSource
+import com.whatstheweather.app.domain.model.AppSettings
 import com.whatstheweather.app.domain.model.City
 import com.whatstheweather.app.domain.repository.CityRepository
+import com.whatstheweather.app.domain.repository.SettingsRepository
 import com.whatstheweather.app.domain.usecase.GetCurrentWeatherUseCase
 import com.whatstheweather.app.domain.usecase.ManageCityUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -24,6 +26,7 @@ class HomeViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     private val getWeatherUseCase: GetCurrentWeatherUseCase,
     private val manageCityUseCase: ManageCityUseCase,
+    private val settingsRepository: SettingsRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<HomeUiState>(HomeUiState.Loading)
@@ -31,6 +34,9 @@ class HomeViewModel @Inject constructor(
 
     val savedCities: StateFlow<List<City>> = manageCityUseCase.getSavedCities()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val settings: StateFlow<AppSettings> = settingsRepository.getSettings()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), AppSettings())
 
     private val _activeCityIndex = MutableStateFlow(0)
     val activeCityIndex: StateFlow<Int> = _activeCityIndex.asStateFlow()

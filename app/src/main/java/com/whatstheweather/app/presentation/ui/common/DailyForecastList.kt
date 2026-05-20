@@ -13,11 +13,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.whatstheweather.app.domain.model.DailyForecast
-import kotlin.math.roundToInt
+import com.whatstheweather.app.domain.model.TemperatureUnit
+import com.whatstheweather.app.presentation.util.formatTemperature
 
 @Composable
 fun DailyForecastList(
     forecasts: List<DailyForecast>,
+    temperatureUnit: TemperatureUnit,
     modifier: Modifier = Modifier
 ) {
     GlassCard(modifier = modifier.fillMaxWidth(), cornerRadius = 16.dp) {
@@ -38,7 +40,7 @@ fun DailyForecastList(
             }
             Spacer(modifier = Modifier.height(12.dp))
             forecasts.forEachIndexed { index, forecast ->
-                DailyForecastItem(forecast = forecast)
+                DailyForecastItem(forecast = forecast, temperatureUnit = temperatureUnit)
                 if (index < forecasts.lastIndex) {
                     Divider(
                         modifier = Modifier.padding(vertical = 8.dp),
@@ -52,7 +54,7 @@ fun DailyForecastList(
 }
 
 @Composable
-private fun DailyForecastItem(forecast: DailyForecast) {
+private fun DailyForecastItem(forecast: DailyForecast, temperatureUnit: TemperatureUnit) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -87,12 +89,12 @@ private fun DailyForecastItem(forecast: DailyForecast) {
             modifier = Modifier.padding(start = 12.dp)
         ) {
             Text(
-                text = "${forecast.tempMin.roundToInt()}°",
+                text = formatTemperature(forecast.tempMin, temperatureUnit),
                 style = MaterialTheme.typography.bodyMedium,
                 color = Color.White.copy(alpha = 0.5f)
             )
             Text(
-                text = "${forecast.tempMax.roundToInt()}°",
+                text = formatTemperature(forecast.tempMax, temperatureUnit),
                 style = MaterialTheme.typography.bodyMedium,
                 color = Color.White
             )

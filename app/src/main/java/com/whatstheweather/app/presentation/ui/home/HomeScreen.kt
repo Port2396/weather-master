@@ -24,6 +24,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.accompanist.permissions.*
 import com.whatstheweather.app.domain.model.*
 import com.whatstheweather.app.presentation.ui.common.*
+import com.whatstheweather.app.presentation.util.formatTemperature
+import com.whatstheweather.app.presentation.util.formatTime
+import com.whatstheweather.app.presentation.util.formatWindSpeed
 import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class,
@@ -37,6 +40,7 @@ fun HomeScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val savedCities by viewModel.savedCities.collectAsStateWithLifecycle()
     val activeCityIndex by viewModel.activeCityIndex.collectAsStateWithLifecycle()
+    val settings by viewModel.settings.collectAsStateWithLifecycle()
 
     val locationPermission = rememberMultiplePermissionsState(
         listOf(
@@ -58,11 +62,13 @@ fun HomeScreen(
         viewModel.setActiveCity(pagerState.currentPage)
     }
 
+    var isRefreshing by remember { mutableStateOf(false) }
     val pullRefreshState = rememberPullToRefreshState()
-    if (pullRefreshState.isRefreshing) {
-        LaunchedEffect(true) {
+
+    LaunchedEffect(isRefreshing) {
+        if (isRefreshing) {
             viewModel.refresh()
-            pullRefreshState.endRefresh()
+            isRefreshing = false
         }
     }
 
@@ -70,16 +76,18 @@ fun HomeScreen(
     val condition = (uiState as? HomeUiState.Success)?.weatherData?.condition ?: WeatherCondition.CLEAR_SKY
     val isDay = (uiState as? HomeUiState.Success)?.weatherData?.isDay ?: true
 
+    PullToRefreshBox(
+        isRefreshing = isRefreshing,
+        onRefresh = { isRefreshing = true },
+        state = pullRefreshState,
+        modifier = Modifier.fillMaxSize()
+    ) {
     Box(modifier = Modifier.fillMaxSize()) {
         // Animated background
         WeatherBackground(condition = condition, isDay = isDay, modifier = Modifier.fillMaxSize())
 
-        // Pull to refresh
-        PullToRefreshContainer(state = pullRefreshState, modifier = Modifier.align(Alignment.TopCenter))
-
         Column(modifier = Modifier
             .fillMaxSize()
-            .nestedScroll(pullRefreshState.nestedScrollConnection)
             .statusBarsPadding()
         ) {
             // Top bar
@@ -123,6 +131,7 @@ fun HomeScreen(
                     ) {
                         WeatherContent(
                             data = state.weatherData,
+                            settings = settings,
                             modifier = Modifier.fillMaxSize()
                         )
                     }
@@ -130,6 +139,7 @@ fun HomeScreen(
             }
         }
     }
+    } // PullToRefreshBox
 }
 
 @Composable
@@ -161,7 +171,7 @@ private fun HomeTopBar(
 }
 
 @Composable
-private fun WeatherContent(data: WeatherData, modifier: Modifier = Modifier) {
+private fun WeatherContent(data: WeatherData, settings: AppSettings, modifier: Modifier = Modifier) {
     val scrollState = rememberScrollState()
     Column(
         modifier = modifier
@@ -194,13 +204,13 @@ private fun WeatherContent(data: WeatherData, modifier: Modifier = Modifier) {
         // Big temperature
         Row(verticalAlignment = Alignment.Top) {
             Text(
-                text = "${data.currentTemp.roundToInt()}",
+                text = formatTemperature(data.currentTemp, settings.temperatureUnit).dropLast(1),
                 fontSize = 96.sp,
                 color = Color.White,
                 fontWeight = androidx.compose.ui.text.font.FontWeight.Thin
             )
             Text(
-                text = "°",
+                text = if (settings.temperatureUnit == TemperatureUnit.FAHRENHEIT) "°F" else "°C",
                 fontSize = 48.sp,
                 color = Color.White,
                 modifier = Modifier.padding(top = 12.dp)
@@ -209,12 +219,12 @@ private fun WeatherContent(data: WeatherData, modifier: Modifier = Modifier) {
 
         // Feels like + H/L
         Text(
-            text = "Feels like ${data.feelsLike.roundToInt()}°",
+            text = "Feels like ${formatTemperature(data.feelsLike, settings.temperatureUnit)}",
             style = MaterialTheme.typography.bodyLarge,
             color = Color.White.copy(alpha = 0.8f)
         )
         Text(
-            text = "High ${data.tempMax.roundToInt()}°  •  Low ${data.tempMin.roundToInt()}°",
+            text = "High ${formatTemperature(data.tempMax, settings.temperatureUnit)}  •  Low ${formatTemperature(data.tempMin, settings.temperatureUnit)}",
             style = MaterialTheme.typography.bodyMedium,
             color = Color.White.copy(alpha = 0.6f)
         )
@@ -234,12 +244,32 @@ private fun WeatherContent(data: WeatherData, modifier: Modifier = Modifier) {
         GlassCard(modifier = Modifier.fillMaxWidth(), cornerRadius = 16.dp) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                StatItem(label = "Humidity", value = "${data.humidity}%", icon = Icons.Outlined.WaterDrop)
-                StatItem(label = "Wind", value = "${data.windSpeed.roundToInt()} km/h", icon = Icons.Outlined.Air)
-                StatItem(label = "UV Index", value = data.uvIndex.roundToInt().toString(), icon = Icons.Outlined.WbSunny)
-                StatItem(label = "Rain", value = "${data.precipitation}mm", icon = Icons.Outlined.Opacity)
+                StatItem(
+                    label = "Humidity",
+                    value = "${data.humidity}%",
+                    icon = Icons.Outlined.WaterDrop,
+                    modifier = Modifier.weight(1f)
+                )
+                StatItem(
+                    label = "Wind",
+                    value = formatWindSpeed(data.windSpeed, settings.windSpeedUnit),
+                    icon = Icons.Outlined.Air,
+                    modifier = Modifier.weight(1f)
+                )
+                StatItem(
+                    label = "UV Index",
+                    value = data.uvIndex.roundToInt().toString(),
+                    icon = Icons.Outlined.WbSunny,
+                    modifier = Modifier.weight(1f)
+                )
+                StatItem(
+                    label = "Rain",
+                    value = "${data.precipitation}mm",
+                    icon = Icons.Outlined.Opacity,
+                    modifier = Modifier.weight(1f)
+                )
             }
         }
 
@@ -249,10 +279,20 @@ private fun WeatherContent(data: WeatherData, modifier: Modifier = Modifier) {
         GlassCard(modifier = Modifier.fillMaxWidth(), cornerRadius = 16.dp) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                StatItem(label = "Sunrise", value = data.sunrise, icon = Icons.Outlined.WbTwilight)
-                StatItem(label = "Sunset", value = data.sunset, icon = Icons.Outlined.Nightlight)
+                StatItem(
+                    label = "Sunrise",
+                    value = formatTime(data.sunrise, settings.timeFormat),
+                    icon = Icons.Outlined.WbTwilight,
+                    modifier = Modifier.weight(1f)
+                )
+                StatItem(
+                    label = "Sunset",
+                    value = formatTime(data.sunset, settings.timeFormat),
+                    icon = Icons.Outlined.Nightlight,
+                    modifier = Modifier.weight(1f)
+                )
             }
         }
 
@@ -265,24 +305,49 @@ private fun WeatherContent(data: WeatherData, modifier: Modifier = Modifier) {
         Spacer(modifier = Modifier.height(12.dp))
 
         // Hourly
-        HourlyForecastRow(hourlyForecasts = data.hourlyForecast)
+        HourlyForecastRow(
+            hourlyForecasts = data.hourlyForecast,
+            temperatureUnit = settings.temperatureUnit,
+            timeFormat = settings.timeFormat
+        )
 
         Spacer(modifier = Modifier.height(12.dp))
 
         // Daily
-        DailyForecastList(forecasts = data.dailyForecast)
+        DailyForecastList(forecasts = data.dailyForecast, temperatureUnit = settings.temperatureUnit)
 
         Spacer(modifier = Modifier.height(32.dp))
     }
 }
 
 @Composable
-private fun StatItem(label: String, value: String, icon: androidx.compose.ui.graphics.vector.ImageVector) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+private fun StatItem(
+    label: String,
+    value: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier.padding(vertical = 4.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
         Icon(icon, contentDescription = label, tint = Color.White.copy(alpha = 0.7f), modifier = Modifier.size(20.dp))
         Spacer(modifier = Modifier.height(4.dp))
-        Text(text = value, style = MaterialTheme.typography.bodyMedium, color = Color.White)
-        Text(text = label, style = MaterialTheme.typography.bodySmall, color = Color.White.copy(alpha = 0.6f))
+        Text(
+            text = value,
+            style = MaterialTheme.typography.bodyMedium,
+            color = Color.White,
+            maxLines = 1,
+            textAlign = TextAlign.Center,
+            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+        )
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodySmall,
+            color = Color.White.copy(alpha = 0.6f),
+            maxLines = 1,
+            textAlign = TextAlign.Center
+        )
     }
 }
 

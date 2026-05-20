@@ -13,12 +13,17 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.whatstheweather.app.domain.model.HourlyForecast
+import com.whatstheweather.app.domain.model.TemperatureUnit
+import com.whatstheweather.app.domain.model.TimeFormat
 import com.whatstheweather.app.domain.model.WeatherCondition
-import kotlin.math.roundToInt
+import com.whatstheweather.app.presentation.util.formatTemperature
+import com.whatstheweather.app.presentation.util.formatTime
 
 @Composable
 fun HourlyForecastRow(
     hourlyForecasts: List<HourlyForecast>,
+    temperatureUnit: TemperatureUnit,
+    timeFormat: TimeFormat,
     modifier: Modifier = Modifier
 ) {
     GlassCard(modifier = modifier.fillMaxWidth(), cornerRadius = 16.dp) {
@@ -31,7 +36,11 @@ fun HourlyForecastRow(
             Spacer(modifier = Modifier.height(12.dp))
             LazyRow(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                 items(hourlyForecasts) { forecast ->
-                    HourlyItem(forecast = forecast)
+                    HourlyItem(
+                        forecast = forecast,
+                        temperatureUnit = temperatureUnit,
+                        timeFormat = timeFormat
+                    )
                 }
             }
         }
@@ -39,16 +48,17 @@ fun HourlyForecastRow(
 }
 
 @Composable
-private fun HourlyItem(forecast: HourlyForecast) {
+private fun HourlyItem(
+    forecast: HourlyForecast,
+    temperatureUnit: TemperatureUnit,
+    timeFormat: TimeFormat
+) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         Text(
-            text = forecast.time.let {
-                val parts = it.split(":")
-                if (parts.size >= 2) "${parts[0]}:${parts[1]}" else it
-            },
+            text = formatTime(forecast.time, timeFormat),
             style = MaterialTheme.typography.bodySmall,
             color = Color.White.copy(alpha = 0.7f)
         )
@@ -58,7 +68,7 @@ private fun HourlyItem(forecast: HourlyForecast) {
             size = 28.dp
         )
         Text(
-            text = "${forecast.temperature.roundToInt()}°",
+            text = formatTemperature(forecast.temperature, temperatureUnit),
             style = MaterialTheme.typography.bodyMedium,
             color = Color.White,
             textAlign = TextAlign.Center
