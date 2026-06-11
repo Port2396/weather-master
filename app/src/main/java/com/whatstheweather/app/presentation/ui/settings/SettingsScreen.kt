@@ -1,14 +1,8 @@
 package com.whatstheweather.app.presentation.ui.settings
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.*
@@ -19,9 +13,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -36,7 +27,6 @@ fun SettingsScreen(
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
     val settings by viewModel.settings.collectAsStateWithLifecycle()
-    var advancedExpanded by remember { mutableStateOf(false) }
     val scrollState = rememberScrollState()
 
     Box(
@@ -118,95 +108,6 @@ fun SettingsScreen(
                         checked = settings.notificationsEnabled,
                         onCheckedChange = { viewModel.updateSettings(settings.copy(notificationsEnabled = it)) }
                     )
-                }
-            }
-
-            Spacer(Modifier.height(16.dp))
-
-            // ─── Advanced Settings ────────────────────────────────────────
-            GlassCard(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp).clickable { advancedExpanded = !advancedExpanded },
-                cornerRadius = 16.dp, alpha = 0.1f
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Outlined.Tune, null, tint = Color.White.copy(0.8f), modifier = Modifier.size(20.dp))
-                        Spacer(Modifier.width(12.dp))
-                        Column {
-                            Text("Advanced Settings", style = MaterialTheme.typography.titleMedium, color = Color.White)
-                            Text("API provider & keys", style = MaterialTheme.typography.bodySmall, color = Color.White.copy(0.55f))
-                        }
-                    }
-                    Icon(
-                        if (advancedExpanded) Icons.Outlined.ExpandLess else Icons.Outlined.ExpandMore,
-                        null, tint = Color.White.copy(0.6f)
-                    )
-                }
-            }
-
-            AnimatedVisibility(
-                visible = advancedExpanded,
-                enter = expandVertically(),
-                exit = shrinkVertically()
-            ) {
-                GlassCard(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp).padding(top = 4.dp),
-                    cornerRadius = 16.dp
-                ) {
-                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-
-                        // API provider selection
-                        Text("Weather Data Source", style = MaterialTheme.typography.labelLarge, color = Color.White.copy(0.65f))
-
-                        WeatherApiProvider.values().forEach { provider ->
-                            Row(
-                                modifier = Modifier.fillMaxWidth().clickable {
-                                    viewModel.updateSettings(settings.copy(apiProvider = provider))
-                                },
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                RadioButton(
-                                    selected = settings.apiProvider == provider,
-                                    onClick = { viewModel.updateSettings(settings.copy(apiProvider = provider)) },
-                                    colors = RadioButtonDefaults.colors(selectedColor = Color.White, unselectedColor = Color.White.copy(0.4f))
-                                )
-                                Column {
-                                    Text(provider.displayName(), color = Color.White, style = MaterialTheme.typography.bodyMedium)
-                                    Text(provider.subtitle(), color = Color.White.copy(0.5f), style = MaterialTheme.typography.bodySmall)
-                                }
-                            }
-                        }
-
-                        Divider(color = Color.White.copy(0.1f))
-
-                        // API key inputs
-                        if (settings.apiProvider == WeatherApiProvider.OPEN_WEATHER_MAP) {
-                            ApiKeyField(
-                                label = "OpenWeatherMap API Key",
-                                value = settings.openWeatherMapApiKey,
-                                onValueChange = { viewModel.updateSettings(settings.copy(openWeatherMapApiKey = it)) }
-                            )
-                        }
-                        if (settings.apiProvider == WeatherApiProvider.WEATHER_API) {
-                            ApiKeyField(
-                                label = "WeatherAPI.com API Key",
-                                value = settings.weatherApiKey,
-                                onValueChange = { viewModel.updateSettings(settings.copy(weatherApiKey = it)) }
-                            )
-                        }
-                        if (settings.apiProvider == WeatherApiProvider.TOMORROW_IO) {
-                            ApiKeyField(
-                                label = "Tomorrow.io API Key",
-                                value = settings.tomorrowApiKey,
-                                onValueChange = { viewModel.updateSettings(settings.copy(tomorrowApiKey = it)) }
-                            )
-                        }
-
-                    }
                 }
             }
 
@@ -295,41 +196,4 @@ private fun SwitchRow(
     }
 }
 
-@Composable
-private fun ApiKeyField(label: String, value: String, onValueChange: (String) -> Unit) {
-    var visible by remember { mutableStateOf(false) }
-    OutlinedTextField(
-        value = value,
-        onValueChange = onValueChange,
-        label = { Text(label, color = Color.White.copy(0.6f)) },
-        modifier = Modifier.fillMaxWidth(),
-        singleLine = true,
-        visualTransformation = if (visible) VisualTransformation.None else PasswordVisualTransformation(),
-        trailingIcon = {
-            IconButton(onClick = { visible = !visible }) {
-                Icon(if (visible) Icons.Outlined.VisibilityOff else Icons.Outlined.Visibility, null, tint = Color.White.copy(0.5f))
-            }
-        },
-        colors = OutlinedTextFieldDefaults.colors(
-            focusedTextColor = Color.White, unfocusedTextColor = Color.White,
-            focusedBorderColor = Color.White.copy(0.4f), unfocusedBorderColor = Color.White.copy(0.2f),
-            cursorColor = Color.White
-        ),
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-        shape = RoundedCornerShape(12.dp)
-    )
-}
 
-private fun WeatherApiProvider.displayName() = when (this) {
-    WeatherApiProvider.OPEN_METEO -> "Open-Meteo"
-    WeatherApiProvider.OPEN_WEATHER_MAP -> "OpenWeatherMap"
-    WeatherApiProvider.WEATHER_API -> "WeatherAPI.com"
-    WeatherApiProvider.TOMORROW_IO -> "Tomorrow.io"
-}
-
-private fun WeatherApiProvider.subtitle() = when (this) {
-    WeatherApiProvider.OPEN_METEO -> "Free · No API key required · Default"
-    WeatherApiProvider.OPEN_WEATHER_MAP -> "Free tier · Requires API key"
-    WeatherApiProvider.WEATHER_API -> "Free tier · Requires API key"
-    WeatherApiProvider.TOMORROW_IO -> "Free tier · Requires API key"
-}

@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
@@ -42,6 +43,7 @@ fun GlassCard(
 
     Box(
         modifier = modifier
+            .shadow(elevation = 6.dp, shape = shape, ambientColor = Color.Black.copy(alpha = 0.3f), spotColor = Color.Black.copy(alpha = 0.2f))
             .clip(shape)
             .drawBehind { drawGlassBackground(glassBackground) }
             .border(width = 1.dp, brush = glassBorder, shape = shape)

@@ -104,6 +104,9 @@ dependencies {
     // Accompanist
     implementation(libs.accompanist.permissions)
 
+    // Google Fonts
+    implementation(libs.compose.ui.google.fonts)
+
     // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

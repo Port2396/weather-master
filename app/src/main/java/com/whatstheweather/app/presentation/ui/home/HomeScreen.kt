@@ -177,10 +177,10 @@ private fun WeatherContent(data: WeatherData, settings: AppSettings, modifier: M
         modifier = modifier
             .fillMaxSize()
             .verticalScroll(scrollState)
-            .padding(horizontal = 16.dp),
+            .padding(horizontal = 20.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         // City name
         Text(
@@ -190,16 +190,16 @@ private fun WeatherContent(data: WeatherData, settings: AppSettings, modifier: M
             textAlign = TextAlign.Center
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(6.dp))
 
         // Condition string
         Text(
             text = data.condition.toDisplayName(),
             style = MaterialTheme.typography.bodyLarge,
-            color = Color.White.copy(alpha = 0.8f)
+            color = Color.White.copy(alpha = 0.75f)
         )
 
-        Spacer(modifier = Modifier.height(4.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
         // Big temperature
         Row(verticalAlignment = Alignment.Top) {
@@ -207,15 +207,20 @@ private fun WeatherContent(data: WeatherData, settings: AppSettings, modifier: M
                 text = formatTemperature(data.currentTemp, settings.temperatureUnit).dropLast(1),
                 fontSize = 96.sp,
                 color = Color.White,
-                fontWeight = androidx.compose.ui.text.font.FontWeight.Thin
+                fontFamily = com.whatstheweather.app.presentation.theme.OutfitFontFamily,
+                fontWeight = androidx.compose.ui.text.font.FontWeight.Light
             )
             Text(
                 text = if (settings.temperatureUnit == TemperatureUnit.FAHRENHEIT) "°F" else "°C",
-                fontSize = 48.sp,
-                color = Color.White,
-                modifier = Modifier.padding(top = 12.dp)
+                fontSize = 36.sp,
+                color = Color.White.copy(alpha = 0.8f),
+                fontFamily = com.whatstheweather.app.presentation.theme.OutfitFontFamily,
+                fontWeight = androidx.compose.ui.text.font.FontWeight.Light,
+                modifier = Modifier.padding(top = 16.dp)
             )
         }
+
+        Spacer(modifier = Modifier.height(4.dp))
 
         // Feels like + H/L
         Text(
@@ -223,13 +228,14 @@ private fun WeatherContent(data: WeatherData, settings: AppSettings, modifier: M
             style = MaterialTheme.typography.bodyLarge,
             color = Color.White.copy(alpha = 0.8f)
         )
+        Spacer(modifier = Modifier.height(4.dp))
         Text(
-            text = "High ${formatTemperature(data.tempMax, settings.temperatureUnit)}  •  Low ${formatTemperature(data.tempMin, settings.temperatureUnit)}",
+            text = "H: ${formatTemperature(data.tempMax, settings.temperatureUnit)}  ·  L: ${formatTemperature(data.tempMin, settings.temperatureUnit)}",
             style = MaterialTheme.typography.bodyMedium,
             color = Color.White.copy(alpha = 0.6f)
         )
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(28.dp))
 
         // Condition icon large
         WeatherConditionIcon(
@@ -273,7 +279,7 @@ private fun WeatherContent(data: WeatherData, settings: AppSettings, modifier: M
             }
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         // Sunrise/sunset
         GlassCard(modifier = Modifier.fillMaxWidth(), cornerRadius = 16.dp) {
@@ -298,11 +304,11 @@ private fun WeatherContent(data: WeatherData, settings: AppSettings, modifier: M
 
         // Air quality
         data.airQuality?.let { aqi ->
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(16.dp))
             AqiCard(airQuality = aqi)
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         // Hourly
         HourlyForecastRow(
@@ -311,12 +317,12 @@ private fun WeatherContent(data: WeatherData, settings: AppSettings, modifier: M
             timeFormat = settings.timeFormat
         )
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         // Daily
         DailyForecastList(forecasts = data.dailyForecast, temperatureUnit = settings.temperatureUnit)
 
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(48.dp))
     }
 }
 

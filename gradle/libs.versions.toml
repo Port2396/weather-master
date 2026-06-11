@@ -73,6 +73,9 @@ coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coi
 coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }
 coroutines-play-services = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-play-services", version.ref = "coroutines" }
 
+# Google Fonts
+compose-ui-google-fonts = { group = "androidx.compose.ui", name = "ui-text-google-fonts" }
+
 # Accompanist
 accompanist-permissions = { group = "com.google.accompanist", name = "accompanist-permissions", version.ref = "accompanistPermissions" }
 
