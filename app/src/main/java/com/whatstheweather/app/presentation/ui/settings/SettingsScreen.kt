@@ -100,6 +100,16 @@ fun SettingsScreen(
                     )
                     Divider(color = Color.White.copy(0.1f), thickness = 0.5.dp)
 
+                    // Animated background
+                    SwitchRow(
+                        label = "Animated Background",
+                        icon = Icons.Outlined.Animation,
+                        subtitle = "Rain, snow & cloud effects",
+                        checked = settings.animatedBackground,
+                        onCheckedChange = { viewModel.updateSettings(settings.copy(animatedBackground = it)) }
+                    )
+                    Divider(color = Color.White.copy(0.1f), thickness = 0.5.dp)
+
                     // Notifications
                     SwitchRow(
                         label = "Weather Alerts",

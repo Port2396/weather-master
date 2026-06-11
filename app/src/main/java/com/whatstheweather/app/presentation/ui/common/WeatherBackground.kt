@@ -20,7 +20,8 @@ import kotlin.random.Random
 fun WeatherBackground(
     condition: WeatherCondition,
     isDay: Boolean,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    animationsEnabled: Boolean = true
 ) {
     val (topColor, bottomColor) = getGradientColors(condition, isDay)
 
@@ -29,26 +30,42 @@ fun WeatherBackground(
             .fillMaxSize()
             .background(Brush.verticalGradient(listOf(topColor, bottomColor)))
     ) {
-        when {
-            condition == WeatherCondition.RAIN ||
-            condition == WeatherCondition.DRIZZLE ||
-            condition == WeatherCondition.RAIN_SHOWERS -> RainAnimation()
+        if (animationsEnabled) {
+            when {
+                condition == WeatherCondition.RAIN ||
+                condition == WeatherCondition.DRIZZLE ||
+                condition == WeatherCondition.RAIN_SHOWERS -> RainAnimation()
 
-            condition == WeatherCondition.SNOW ||
-            condition == WeatherCondition.SNOW_SHOWERS -> SnowAnimation()
+                condition == WeatherCondition.SNOW ||
+                condition == WeatherCondition.SNOW_SHOWERS -> SnowAnimation()
 
-            condition == WeatherCondition.THUNDERSTORM ||
-            condition == WeatherCondition.THUNDERSTORM_WITH_HAIL -> ThunderstormAnimation()
+                condition == WeatherCondition.THUNDERSTORM ||
+                condition == WeatherCondition.THUNDERSTORM_WITH_HAIL -> ThunderstormAnimation()
 
-            condition == WeatherCondition.CLEAR_SKY && isDay -> SunAnimation()
+                condition == WeatherCondition.CLEAR_SKY && isDay -> SunAnimation()
 
-            condition == WeatherCondition.PARTLY_CLOUDY -> CloudDriftAnimation(count = 3)
+                condition == WeatherCondition.PARTLY_CLOUDY -> CloudDriftAnimation(count = 3)
 
-            condition == WeatherCondition.OVERCAST -> CloudDriftAnimation(count = 6, alpha = 0.12f)
+                condition == WeatherCondition.OVERCAST -> CloudDriftAnimation(count = 6, alpha = 0.12f)
 
-            condition == WeatherCondition.FOG -> FogAnimation()
+                condition == WeatherCondition.FOG -> FogAnimation()
 
-            !isDay -> StarfieldAnimation()
+                !isDay -> StarfieldAnimation()
+            }
+
+            // Fade the animations toward the bottom so cards/text below stay legible.
+            // Keeps the effects vivid up top, blending into the plain gradient lower down.
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        Brush.verticalGradient(
+                            0.0f to Color.Transparent,
+                            0.35f to Color.Transparent,
+                            1.0f to bottomColor.copy(alpha = 0.85f)
+                        )
+                    )
+            )
         }
     }
 }

@@ -28,6 +28,7 @@ class SettingsDataStore @Inject constructor(
         val WEATHER_API_KEY = stringPreferencesKey("weather_api_key")
         val TOMORROW_API_KEY = stringPreferencesKey("tomorrow_api_key")
         val NOTIFICATIONS = booleanPreferencesKey("notifications")
+        val ANIMATED_BG = booleanPreferencesKey("animated_background")
     }
 
     val settings: Flow<AppSettings> = context.dataStore.data
@@ -42,7 +43,8 @@ class SettingsDataStore @Inject constructor(
                 openWeatherMapApiKey = prefs[Keys.OWM_API_KEY] ?: "",
                 weatherApiKey = prefs[Keys.WEATHER_API_KEY] ?: "",
                 tomorrowApiKey = prefs[Keys.TOMORROW_API_KEY] ?: "",
-                notificationsEnabled = prefs[Keys.NOTIFICATIONS] ?: false
+                notificationsEnabled = prefs[Keys.NOTIFICATIONS] ?: false,
+                animatedBackground = prefs[Keys.ANIMATED_BG] ?: true
             )
         }
 
@@ -57,6 +59,7 @@ class SettingsDataStore @Inject constructor(
             prefs[Keys.WEATHER_API_KEY] = settings.weatherApiKey
             prefs[Keys.TOMORROW_API_KEY] = settings.tomorrowApiKey
             prefs[Keys.NOTIFICATIONS] = settings.notificationsEnabled
+            prefs[Keys.ANIMATED_BG] = settings.animatedBackground
         }
     }
 }

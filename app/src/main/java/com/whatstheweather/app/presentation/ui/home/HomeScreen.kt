@@ -74,7 +74,13 @@ fun HomeScreen(
 
     // Get weather condition for background
     val condition = (uiState as? HomeUiState.Success)?.weatherData?.condition ?: WeatherCondition.CLEAR_SKY
-    val isDay = (uiState as? HomeUiState.Success)?.weatherData?.isDay ?: true
+    val actualIsDay = (uiState as? HomeUiState.Success)?.weatherData?.isDay ?: true
+    // Light/Dark theme overrides the background's day/night look; System follows real time of day.
+    val isDay = when (settings.theme) {
+        AppTheme.LIGHT -> true
+        AppTheme.DARK -> false
+        AppTheme.SYSTEM -> actualIsDay
+    }
 
     PullToRefreshBox(
         isRefreshing = isRefreshing,
@@ -84,7 +90,12 @@ fun HomeScreen(
     ) {
     Box(modifier = Modifier.fillMaxSize()) {
         // Animated background
-        WeatherBackground(condition = condition, isDay = isDay, modifier = Modifier.fillMaxSize())
+        WeatherBackground(
+            condition = condition,
+            isDay = isDay,
+            animationsEnabled = settings.animatedBackground,
+            modifier = Modifier.fillMaxSize()
+        )
 
         Column(modifier = Modifier
             .fillMaxSize()

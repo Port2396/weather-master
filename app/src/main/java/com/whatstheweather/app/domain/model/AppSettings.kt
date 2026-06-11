@@ -15,5 +15,6 @@ data class AppSettings(
     val openWeatherMapApiKey: String = "",
     val weatherApiKey: String = "",
     val tomorrowApiKey: String = "",
-    val notificationsEnabled: Boolean = false
+    val notificationsEnabled: Boolean = false,
+    val animatedBackground: Boolean = true
 )

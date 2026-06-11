@@ -40,24 +40,24 @@ private fun getConditionIconAndTint(
         Icons.Outlined.NightsStay to Color(0xFFE8EAF6)
 
     WeatherCondition.PARTLY_CLOUDY -> if (isDay)
-        Icons.Outlined.WbCloudy to Color(0xFFB0BEC5)
+        Icons.Filled.Cloud to Color(0xFFECEFF1)
     else
-        Icons.Outlined.NightsStay to Color(0xFFB0BEC5)
+        Icons.Outlined.NightsStay to Color(0xFFE8EAF6)
 
     WeatherCondition.OVERCAST ->
-        Icons.Filled.Cloud to Color(0xFF90A4AE)
+        Icons.Filled.Cloud to Color(0xFFCFD8DC)
 
     WeatherCondition.FOG ->
-        Icons.Outlined.FilterDrama to Color(0xFFCFD8DC)
+        Icons.Filled.FilterDrama to Color(0xFFECEFF1)
 
     WeatherCondition.DRIZZLE ->
-        Icons.Outlined.Grain to Color(0xFF81D4FA)
+        Icons.Outlined.Grain to Color(0xFF90CAF9)
 
     WeatherCondition.RAIN, WeatherCondition.RAIN_SHOWERS ->
-        Icons.Outlined.Thunderstorm to Color(0xFF64B5F6)
+        Icons.Filled.Water to Color(0xFF90CAF9)
 
     WeatherCondition.SNOW, WeatherCondition.SNOW_SHOWERS ->
-        Icons.Outlined.AcUnit to Color(0xFFE3F2FD)
+        Icons.Filled.AcUnit to Color(0xFFFFFFFF)
 
     WeatherCondition.THUNDERSTORM, WeatherCondition.THUNDERSTORM_WITH_HAIL ->
         Icons.Filled.Thunderstorm to Color(0xFFFFD54F)
