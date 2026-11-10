@@ -37,14 +37,19 @@
 
 ## ⚙️ Environment — Read This If The Build Fails
 
-**The project needs Java 17 to run Gradle.** Gradle 8.10.2 cannot run on Java 25/26.
+**Gradle must run on Java 17–21.** Gradle 8.10.2 cannot run on Java 25/26
+(Android Studio's embedded runtime is JBR 25).
 
-- Symptom: *"Incompatible Gradle JVM version … Gradle 8.10.2 is incompatible with
-  the Gradle JVM version 25"*. Happens whenever the project is opened in a new
-  folder, because Android Studio falls back to its embedded JetBrains Runtime 25.
-- Fix: **Settings → Build, Execution, Deployment → Build Tools → Gradle → Gradle JDK
-  → `java-17-openjdk`** (`/usr/lib/jvm/java-17-openjdk`), then re-sync.
-- If missing: `yay -S jdk17-openjdk`.
+- The Gradle daemon JVM is now pinned in `gradle/gradle-daemon-jvm.properties`
+  (JetBrains Runtime 21). Android Studio downloads it to `~/.jdks/jbr-21.*`.
+  The `foojay-resolver-convention` plugin in `settings.gradle.kts` lets Gradle
+  download JDK toolchains on its own.
+- Old symptom: *"Incompatible Gradle JVM version … Gradle 8.10.2 is incompatible
+  with the Gradle JVM version 25"*. If it comes back: **Settings → Build,
+  Execution, Deployment → Build Tools → Gradle → Gradle JDK → JBR 21 (or any
+  JDK 17/21)**, then re-sync.
+- Command line: the `gradlew` launcher also needs a JDK 17–21, e.g.
+  `JAVA_HOME=~/.jdks/jbr-21.0.11 ./gradlew assembleDebug`.
 - **Don't** accept Android Studio's "upgrade Gradle / AGP" prompts casually —
   AGP 8.7.3 is pinned to work with Gradle 8.10.2. Upgrading is a separate task.
 
