@@ -1,346 +1,216 @@
 # 📋 Project Handoff: "What's the Weather" Android App
 
-> **Purpose of this document:** This is a complete handoff for a new AI assistant session. Read everything here before writing any code or making suggestions. The project has a long history — this doc captures it all.
+> **For a new AI session:** read this whole file before changing code. It reflects
+> the code as of **2026-11-11**. Where this doc and the code disagree, trust the code.
 
 ---
 
-## 🧭 TL;DR — What's the Situation?
+## 🧭 TL;DR
 
-- **The app is fully coded.** ~44 Kotlin source files were written from scratch.
-- **The code is on GitHub** at `github.com/Port2396/weather-master`.
-- **The app has NOT been built or tested yet** — Android Studio was not installed when the code was written, and the build has never successfully completed.
-- **The next step is: install Android Studio → open the project → build → fix any compilation errors → run on emulator/device.**
+- Kotlin + Jetpack Compose Android weather app, **builds and runs** (v1.1.0 released).
+- Active work branch: **`claude/festive-allen-9n3abt`** (one commit ahead of `main`:
+  background flicker fix — **not yet tested on a device**).
+- CI (GitHub Actions) builds a debug APK on every push to `main` and `claude/**`.
+- Main open items: verify the flicker fix, decide on the notifications toggle,
+  remove leftover dead code, performance pass. See **Open Work** below.
 
 ---
 
 ## 👤 User Context
 
-- **Name:** Ahmet (GitHub: `Port2396`, email: `ahmetportakaldali@gmail.com`)
-- **OS:** CachyOS (Arch Linux–based), KDE desktop
-- **Editor:** VS Code (with Antigravity AI extension)
-- **Package manager:** `yay` (AUR helper)
-- **Git:** SSH configured, key added to GitHub account
-- **GitHub Desktop:** Installed (from AUR, `github-desktop-bin`)
-- **Android Studio:** Was being installed but status is uncertain — user should verify it's installed and open it
+- **Name:** Ahmet (GitHub: `Port2396`)
+- **OS:** CachyOS (Arch-based), KDE. AUR helper: `yay`.
+- **IDE:** Android Studio (at `/opt/android-studio/`), with the Claude agent panel.
+- **Emulator:** Pixel 7A, API 35.
+- **Prefers:** simple, clear explanations; honest feedback.
 
 ---
 
 ## 📁 Project Location
 
-- **Local path:** `/home/ahmet/Documents/Antigravity/Open Source App Forks/weather-master/`
-- **GitHub repo:** `https://github.com/Port2396/weather-master`
-- **Branch:** `main`
-- **Commit:** `8e17f37` — "Initial commit: WhatsTheWeather Android app"
+- **Local path:** `~/Documents/Weatherapp/` (moved — older notes said
+  `~/Documents/Antigravity/Open Source App Forks/weather-master/`)
+- **GitHub:** `https://github.com/Port2396/weather-master` (default branch `main`)
+- `local.properties` (not in git): `sdk.dir=/home/ahmet/Android/Sdk`
 
-> [!IMPORTANT]
-> The local `sdk.dir` is set to `/home/ahmet/Android/Sdk` in `local.properties`. Android Studio, when installed, will set this automatically. If the file is missing/wrong, Android Studio will prompt to fix it on first open.
+---
+
+## ⚙️ Environment — Read This If The Build Fails
+
+**The project needs Java 17 to run Gradle.** Gradle 8.10.2 cannot run on Java 25/26.
+
+- Symptom: *"Incompatible Gradle JVM version … Gradle 8.10.2 is incompatible with
+  the Gradle JVM version 25"*. Happens whenever the project is opened in a new
+  folder, because Android Studio falls back to its embedded JetBrains Runtime 25.
+- Fix: **Settings → Build, Execution, Deployment → Build Tools → Gradle → Gradle JDK
+  → `java-17-openjdk`** (`/usr/lib/jvm/java-17-openjdk`), then re-sync.
+- If missing: `yay -S jdk17-openjdk`.
+- **Don't** accept Android Studio's "upgrade Gradle / AGP" prompts casually —
+  AGP 8.7.3 is pinned to work with Gradle 8.10.2. Upgrading is a separate task.
+
+Command-line build: `./gradlew assembleDebug`
 
 ---
 
 ## 🗂 What This Project Is
 
-This was originally a fork of an open-source Java/XML Android weather app. **The entire original codebase was deleted** and replaced with a ground-up rewrite in:
+A ground-up Kotlin rewrite of a forked Java/XML weather app (the original code was
+deleted).
 
-- **Kotlin** (replacing Java)
-- **Jetpack Compose + Material 3** (replacing XML layouts)
-- **MVVM + Clean Architecture**
-- **Open-Meteo API** (free, no API key needed)
+| Item | Value |
+|---|---|
+| App name | What's the Weather |
+| Package | `com.whatstheweather.app` |
+| Version | 1.1.0 (versionCode 2) |
+| Min / Target / Compile SDK | 26 / 35 / 35 |
+| Java / JVM target | 17 |
+| Release build | minify + shrink resources (ProGuard) |
 
-**App name:** *What's the Weather*  
-**Package ID:** `com.whatstheweather.app`  
-**Min SDK:** 26 (Android 8.0 Oreo)  
-**Target/Compile SDK:** 35 (Android 15)
-
----
-
-## 🛠 Full Tech Stack
+## 🛠 Tech Stack
 
 | Layer | Technology |
 |---|---|
 | Language | Kotlin 2.0.21 |
-| UI | Jetpack Compose + Material 3 (Compose BOM 2024.12.01) |
-| Architecture | MVVM + Clean Architecture (domain/data/presentation layers) |
-| DI | Hilt 2.52 (via KSP) |
-| Async | Kotlin Coroutines 1.9.0 + StateFlow |
-| Networking | Retrofit2 2.11.0 + OkHttp 5 alpha |
-| Local DB | Room 2.6.1 |
+| UI | Jetpack Compose + Material 3 (BOM 2024.12.01) |
+| Architecture | MVVM + Clean Architecture (domain / data / presentation) |
+| DI | Hilt 2.52 (KSP) |
+| Async | Coroutines + StateFlow |
+| Networking | Retrofit 2.11.0 + OkHttp 5.0.0-alpha.14 |
+| Local DB | Room 2.6.1 (saved cities) |
 | Preferences | DataStore 1.1.1 |
-| Location | Google Play Services Location 21.3.0 (FusedLocationProviderClient) |
-| Animations | Lottie Compose 6.5.2 |
-| Image loading | Coil 2.7.0 |
+| Location | Play Services Location (FusedLocationProviderClient) |
 | Navigation | Navigation Compose 2.8.5 |
-| Permissions | Accompanist Permissions 0.36.0 |
-| Annotation proc | KSP 2.0.21-1.0.28 (replaces KAPT) |
-| Build system | AGP 8.7.3, Gradle with KTS, Version Catalog (`libs.versions.toml`) |
+| Permissions | Accompanist Permissions |
+| Fonts | Outfit (headings/temps) + Inter (body) via Google Fonts |
+| Build | AGP 8.7.3, Gradle 8.10.2, KTS, version catalog `gradle/libs.versions.toml` |
+
+> Lottie and Coil are declared in `app/build.gradle.kts` but **not used anywhere**
+> in the code. Weather icons and backgrounds are plain Compose (Canvas / vectors).
+
+## 🌦 Data Source
+
+**Open-Meteo only** (free, no API key):
+- Forecast: `https://api.open-meteo.com/v1/`
+- Air quality: `https://air-quality-api.open-meteo.com/v1/`
+- City search: `https://geocoding-api.open-meteo.com/v1/`
+
+All three are defined in `data/api/openmeteo/OpenMeteoService.kt`.
+There is **no caching layer** — every load hits the network.
 
 ---
 
-## 🌦 Weather API
-
-**Primary:** [Open-Meteo](https://open-meteo.com/)
-- Completely free, **no API key required**
-- Provides: temperature, feels like, humidity, wind, precipitation, UV index, AQI, sunrise/sunset, hourly + 10-day daily forecasts
-- Base URL: `https://api.open-meteo.com/v1/`
-- Air quality base URL: `https://air-quality-api.open-meteo.com/v1/`
-
-**Advanced settings** also allow switching to (all require API keys stored in DataStore):
-- OpenWeatherMap
-- WeatherAPI.com
-- Tomorrow.io
-
----
-
-## 📐 Architecture Overview
+## 📐 Source Layout (47 Kotlin files)
 
 ```
 app/src/main/java/com/whatstheweather/app/
-├── WeatherApplication.kt          ← @HiltAndroidApp entry point
-├── MainActivity.kt                ← Single activity, hosts NavHost
-├── di/
-│   ├── DatabaseModule.kt          ← Hilt: provides Room DB + DAO
-│   ├── NetworkModule.kt           ← Hilt: provides Retrofit, OkHttp
-│   └── RepositoryModule.kt        ← Hilt: binds interfaces → implementations
+├── WeatherApplication.kt, MainActivity.kt
+├── di/            DatabaseModule, NetworkModule, RepositoryModule
 ├── data/
-│   ├── api/openmeteo/
-│   │   ├── OpenMeteoService.kt    ← Retrofit interface (forecast + air quality)
-│   │   └── OpenMeteoDto.kt        ← Response DTOs (data transfer objects)
-│   ├── local/
-│   │   ├── WeatherDatabase.kt     ← Room DB definition
-│   │   ├── entity/CityEntity.kt   ← Room entity for saved cities
-│   │   └── dao/CityDao.kt         ← Room DAO (queries)
-│   ├── datastore/
-│   │   └── SettingsDataStore.kt   ← DataStore for user preferences
-│   └── repository/
-│       ├── WeatherRepositoryImpl.kt  ← Fetches from Open-Meteo, maps to domain
-│       ├── CityRepositoryImpl.kt     ← CRUD for saved cities via Room
-│       └── SettingsRepositoryImpl.kt ← Reads/writes settings via DataStore
+│   ├── api/openmeteo/   OpenMeteoService (forecast, AQI, geocoding), OpenMeteoDto
+│   ├── local/           WeatherDatabase, dao/CityDao, entity/CityEntity
+│   ├── datastore/       SettingsDataStore
+│   └── repository/      Weather/City/Settings RepositoryImpl
 ├── domain/
-│   ├── model/
-│   │   ├── WeatherData.kt         ← Main weather data model
-│   │   ├── DailyForecast.kt       ← Per-day forecast model
-│   │   ├── HourlyForecast.kt      ← Per-hour forecast model
-│   │   ├── AirQuality.kt          ← AQI model
-│   │   ├── WeatherCondition.kt    ← Enum: CLEAR, CLOUDY, RAIN, SNOW, etc.
-│   │   ├── City.kt                ← Saved city model
-│   │   └── AppSettings.kt         ← Settings model (units, theme, etc.)
-│   ├── repository/
-│   │   ├── WeatherRepository.kt   ← Interface
-│   │   ├── CityRepository.kt      ← Interface
-│   │   └── SettingsRepository.kt  ← Interface
-│   └── usecase/
-│       ├── GetCurrentWeatherUseCase.kt  ← Orchestrates weather fetch
-│       ├── SearchCitiesUseCase.kt       ← Geocoding city search
-│       └── ManageCityUseCase.kt         ← Add/remove saved cities
+│   ├── model/           WeatherData, Daily/HourlyForecast, AirQuality,
+│   │                    WeatherCondition, City, AppSettings
+│   ├── repository/      interfaces
+│   └── usecase/         GetCurrentWeather, SearchCities, ManageCity
 └── presentation/
-    ├── theme/
-    │   ├── Color.kt               ← Glassmorphism color palette
-    │   ├── Theme.kt               ← Material 3 theme, dark/light
-    │   └── Typography.kt          ← Google Fonts typography
-    ├── navigation/
-    │   ├── NavGraph.kt            ← Navigation graph with animated transitions
-    │   └── Screen.kt              ← Sealed class route definitions
+    ├── AppThemeViewModel.kt        theme setting → MainActivity
+    ├── theme/                      Color, Theme, Typography
+    ├── navigation/                 NavGraph, Screen
+    ├── util/                       UnitFormatter (°C/°F, wind), TimeFormatter (12/24h)
     └── ui/
-        ├── home/
-        │   ├── HomeScreen.kt      ← Main weather screen (hero, hourly, daily, AQI)
-        │   ├── HomeViewModel.kt   ← StateFlow-based ViewModel
-        │   └── HomeUiState.kt     ← Sealed class: Loading/Success/Error
-        ├── cities/
-        │   ├── CityManagerScreen.kt  ← Search + saved cities list
-        │   └── CityManagerViewModel.kt
-        ├── settings/
-        │   ├── SettingsScreen.kt  ← Settings + advanced settings expandable section
-        │   └── SettingsViewModel.kt
-        └── common/
-            ├── GlassCard.kt           ← Frosted-glass card composable
-            ├── WeatherBackground.kt   ← Animated gradient/Canvas background
-            ├── WeatherConditionIcon.kt← Animated condition icons (Lottie)
-            ├── HourlyForecastRow.kt   ← Horizontal scroll hourly strip
-            └── DailyForecastList.kt   ← 10-day forecast list
+        ├── home/       HomeScreen, HomeViewModel, HomeUiState
+        ├── cities/     CityManagerScreen, CityManagerViewModel
+        ├── settings/   SettingsScreen, SettingsViewModel
+        └── common/     GlassCard, WeatherBackground, WeatherConditionIcon,
+                        HourlyForecastRow, DailyForecastList
 ```
 
----
-
-## ✨ App Features (All Designed, Code Written)
-
-### Core Weather Display
-- Current temp, feels like, condition text, high/low
-- Hourly forecast (24h) — horizontal scroll
-- 10-day daily forecast
-- Humidity, wind speed + direction
-- UV Index with label (Low / Moderate / High / Very High / Extreme)
-- Sunrise & sunset times
-- Air Quality Index (AQI) with color-coded category
-- Precipitation probability
-
-### Location
-- **Auto-detect via GPS** (FusedLocationProviderClient), prompted on first launch
-- **Manual city search** — search-as-you-type with Android Geocoder
-- **Save favourite cities** — persisted in Room DB
-- **Swipe between cities** — HorizontalPager
-
-### Design & UX
-- **Glassmorphism UI** — frosted glass cards over animated gradient backgrounds
-- **Animated weather backgrounds** via Compose Canvas:
-  - 🌧️ Rain: falling drops
-  - ☀️ Sunny: pulsing sun glow + cloud drift
-  - ⛅ Cloudy: drifting cloud layers
-  - ❄️ Snow: gentle snowfall particles
-  - ⛈️ Thunderstorm: lightning flicker + rain
-  - 🌫️ Fog: slow opacity waves
-- **Dynamic gradients** — colour shifts based on condition + time of day
-- **Full dark mode** — respects system setting
-- **Navigation animations** — fade + vertical slide between screens (like iOS/Google apps)
-- **Staggered list animations** on first load
-- **Scale + ripple** on interactive elements
-
-### Settings
-- Temperature unit (°C / °F)
-- Wind speed unit (km/h / mph / m/s)
-- Time format (12h / 24h)
-- Theme (System / Light / Dark)
-- Notifications toggle for severe weather
-- **Advanced section (collapsible):**
-  - Weather data source selector
-  - API key fields per provider (stored in DataStore)
-  - Cache duration (15min / 30min / 1h)
-  - Location refresh interval
+There are **no unit or instrumented tests** (`app/src/test` and `androidTest` don't exist).
 
 ---
 
-## 📦 Manifest Permissions
+## ✨ Features (working)
 
-```xml
-<uses-permission android:name="android.permission.INTERNET" />
-<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-<uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-```
+- Current conditions: temp, feels like, high/low, humidity, wind, UV, AQI,
+  sunrise/sunset, precipitation chance
+- Hourly (24h) and 10-day forecasts
+- GPS location + city search + saved cities (Room), swipe between cities (HorizontalPager)
+- Pull to refresh
+- Glassmorphism cards over animated Canvas backgrounds (rain, snow, storm, sun,
+  clouds, fog, stars), faded toward the bottom for legibility
 
----
+**Settings that work:** temperature unit, wind unit, 12/24h time, theme
+(Light = day look, Dark = night look, System = real time of day),
+animated background on/off.
 
-## 🔧 Build Configuration
-
-```kotlin
-// app/build.gradle.kts
-compileSdk = 35
-minSdk = 26
-targetSdk = 35
-versionCode = 1
-versionName = "1.0.0"
-```
-
-Java/Kotlin compatibility: **Java 17**, `jvmTarget = "17"`
-
-Release build: minify + shrink resources enabled (ProGuard).
+**Settings that don't work:** the **Notifications** toggle — saved, but nothing
+reads it. No notification service or WorkManager job exists.
 
 ---
 
-## ⚠️ Current Status — What Needs Doing
+## ✅ Latest Change (branch `claude/festive-allen-9n3abt`, commit `2c911f0`)
 
-### ✅ App Builds & Runs!
+Fix animated background flicker — **CI build passes; needs testing on the emulator**:
 
-The app has been built and run successfully on the Pixel 7A emulator. Gradle build succeeds (`./gradlew assembleDebug`). Open-Meteo API works, city search works, weather displays.
+- `WeatherBackground.kt`: rain and snow used a looping transition, so every 1–3 s
+  all particles teleported. Now driven by a continuous frame clock
+  (`rememberElapsedSeconds()`); each particle wraps on its own.
+- `WeatherBackground.kt`: clouds now start fully off-screen instead of popping in.
+- `HomeScreen.kt`: keeps the last known condition while loading, so refresh / city
+  swipe no longer flashes the sunny background.
+- `HomeViewModel.kt`: `loadWeather` cancels the previous request, so a slow
+  response can't show the wrong city's weather.
+- `.github/workflows/android.yml`: now triggers on `main` and `claude/**`
+  (it was set to `master`, which doesn't exist, so CI had never run).
 
-### ✅ Settings That Work
-
-- **Temperature unit** (°C / °F) — converts via `presentation/util/UnitFormatter.kt`
-- **Wind speed unit** (km/h / mph / m/s) — converts via `UnitFormatter.kt`
-- **Time format** (12h / 24h) — applied to hourly forecast + sunrise/sunset via `presentation/util/TimeFormatter.kt`
-- **Theme** (System / Light / Dark) — wired through `AppThemeViewModel.kt` → `MainActivity.kt` → `WhatsTheWeatherTheme`. Note: visual impact is limited because most screens use hardcoded glassmorphism-over-weather-gradient styling that ignores Material 3 colors. Proper light mode would need bigger redesign.
-
-### ❌ Settings That Don't Work (Need Backend Implementation)
-
-These exist in the UI but have no underlying implementation:
-
-- **Notifications toggle** — no notification service / WorkManager job exists
-- **API provider switcher** (OpenWeatherMap / WeatherAPI / Tomorrow.io) — only Open-Meteo is implemented in `data/api/`. Switching the toggle changes the stored preference but doesn't actually swap the data source.
-- **API key fields** — saved to DataStore but never read by anything
-
-### 🗑 Removed
-
-- **Cache Duration** setting — removed from UI + DataStore + AppSettings (no caching layer ever existed)
-
-### 🔧 Environment Notes
-
-- **Java**: Project requires JDK 17. The system had only Java 26 installed (Kotlin 2.0.21 doesn't support Java 26). Installed `jdk17-openjdk` via yay and set as default via `sudo archlinux-java set java-17-openjdk`.
-- **Android Studio**: Installed at `/opt/android-studio/` (was originally extracted to `~/Downloads/android-studio-panda4-patch1-linux/`)
-- **Android SDK**: At `~/Android/Sdk` — auto-populated by Android Studio's first-run wizard
-- **local.properties**: Created with `sdk.dir=/home/ahmet/Android/Sdk` (not in git)
-- **Emulator AVD**: Pixel 7A with API 35 (VanillaIceCream) system image
-
-### 🐛 Known Issues / Polish Needed
-
-- **Flickering**: animated weather backgrounds (Canvas-based rain/clouds/etc.) flicker sometimes — needs investigation
-- **Theme button on home screen**: minor — only "Settings" cog is visible; no theme quick-toggle
-- **Light theme**: only Material 3 colors change; weather screens stay dark because of hardcoded glass-over-gradient design
-- **Performance optimisation** — user wants to do a polish/optimisation pass next
-
-### 🎯 Suggested Next Steps
-
-1. User to test more thoroughly on emulator and report bugs
-2. Optimisation pass — performance, animations, redraws
-3. Eventually: implement at least one alternative API provider (or remove the UI for it)
-4. Eventually: implement notifications (or remove the toggle)
+**How to test:** run on emulator; watch rain/snow/clouds for jumps; pull to refresh
+(background should not flash); swipe quickly between several cities.
+If good → merge to `main`.
 
 ---
 
-## 🔑 Git & GitHub Setup
+## 🎯 Open Work (in suggested order)
 
-| Item | Value |
+1. **Verify the flicker fix** on the emulator, then merge to `main`.
+2. **Notifications toggle** — decide: implement severe-weather alerts
+   (WorkManager + Open-Meteo, needs `POST_NOTIFICATIONS` runtime prompt) or
+   remove the toggle. Not yet decided by the user.
+3. **Dead code cleanup:**
+   - `AppSettings` / `SettingsDataStore` still hold `apiProvider`,
+     `openWeatherMapApiKey`, `weatherApiKey`, `tomorrowApiKey` and the
+     `WeatherApiProvider` enum — their UI was removed in 1.1.0.
+   - Unused dependencies: Lottie, Coil.
+4. **Performance pass** — animations, recompositions.
+5. **Light theme** — weather screens use hardcoded glass-over-gradient colours, so
+   Material light colours have little effect. Proper light mode needs a redesign.
+6. **Tests** — none exist; `UnitFormatter` / `TimeFormatter` are easy first targets.
+7. **Release prep** — bump version, update `CHANGELOG.md`.
+
+Known minor issue: no theme quick-toggle on the home screen (only the Settings cog).
+
+---
+
+## 🔑 Git
+
+- Remote: `git@github.com:Port2396/weather-master.git` (SSH). GitHub Desktop also installed.
+- Get the latest work branch:
+  `git fetch origin && git checkout claude/festive-allen-9n3abt`
+
+---
+
+## 💬 History
+
+| Date | What happened |
 |---|---|
-| Remote | `git@github.com:Port2396/weather-master.git` (SSH) |
-| Default branch | `main` |
-| SSH key | `~/.ssh/id_ed25519` (added to GitHub account) |
-| Push method | SSH (password-less) |
-
-**Future push workflow:**
-```bash
-git add .
-git commit -m "your message"
-git push
-```
-Or use **GitHub Desktop** (installed) for a GUI workflow.
+| Apr 2026 | Full rewrite written (~44 files); never built (no Android SDK). |
+| May 8–20, 2026 | Android Studio + SDK installed, repo pushed to GitHub. First successful build after switching Java 26 → 17; fixed pull-to-refresh API. |
+| May 21, 2026 | Settings wired up: units, time format, theme. Cache duration setting removed. |
+| Jun 11, 2026 | **v1.1.0**: Outfit/Inter fonts, spacing, card shadows, brighter icons, background fade, animation toggle, theme drives day/night background. Removed broken Advanced Settings (API provider/keys). Added CHANGELOG. |
+| Nov 11, 2026 | Background flicker fix + CI fixed (branch `claude/festive-allen-9n3abt`). Project moved to `~/Documents/Weatherapp`; fixed "Incompatible Gradle JVM" by setting Gradle JDK to 17. |
 
 ---
 
-## 🧩 Key Files to Know
-
-| File | Purpose |
-|---|---|
-| `gradle/libs.versions.toml` | All dependency versions in one place |
-| `app/build.gradle.kts` | App-level build config + all dependencies |
-| `settings.gradle.kts` | Project name + module includes |
-| `local.properties` | SDK path (not committed to git) |
-| `app/src/main/AndroidManifest.xml` | Permissions + activity declaration |
-| `WeatherApplication.kt` | Hilt application entry point (`@HiltAndroidApp`) |
-| `MainActivity.kt` | Single activity hosting the Compose NavHost |
-| `NavGraph.kt` | All navigation routes + transition animations |
-| `OpenMeteoService.kt` | Retrofit API interface — this is the main data source |
-| `OpenMeteoDto.kt` | All JSON response models for Open-Meteo |
-| `HomeViewModel.kt` | Primary ViewModel — fetches weather, holds UI state |
-
----
-
-## 💬 Conversation History Summary
-
-| Session | What Happened |
-|---|---|
-| **April 2026** | Full redesign planned and all Kotlin code written (~44 files). Build attempted, failed — Android SDK not found. `local.properties` created pointing to `~/Android/Sdk`. |
-| **May 8, 2026** | Resumed. Confirmed SDK still not installed. Android Studio install initiated via `yay -S android-studio`. Install completed successfully. |
-| **May 20, 2026** | Git repo initialised. All 69 files pushed to GitHub (`github.com/Port2396/weather-master`). SSH key created and added to GitHub. GitHub Desktop installed. |
-| **May 20, 2026 (later)** | First successful build! Fixed Java version (26 → 17), installed Android Studio properly to `/opt/`, set up SDK and Pixel 7A emulator. Fixed a Compose pull-to-refresh API issue (`PullToRefreshContainer` → `PullToRefreshBox`). App ran for the first time. |
-| **May 21, 2026** | Wired up settings: created `UnitFormatter` (°C/°F, km/h/mph/m/s) and `TimeFormatter` (12h/24h). Injected `SettingsRepository` into `HomeViewModel`. Added `AppThemeViewModel` + theme wiring in `MainActivity`. Fixed stat-tile alignment (equal weights). Removed cache duration setting. Pushed to GitHub. |
-
----
-
-## 🎯 Suggested Prompt for Next Session
-
-If you're pasting this into Claude or another AI, here's a suggested opener:
-
-> *"I'm continuing development on my Android weather app. Please read the handoff doc I'm pasting below — it covers everything done so far, the tech stack, all source files, and what needs to happen next. After reading it, help me open the project in Android Studio, run the first build, and fix any compilation errors."*
-
-Then paste this entire document.
-
----
-
-*Last updated: 2026-05-21*
+*Last updated: 2026-11-11*

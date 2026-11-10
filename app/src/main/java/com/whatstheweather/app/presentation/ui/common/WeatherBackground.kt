@@ -88,6 +88,26 @@ private fun getGradientColors(condition: WeatherCondition, isDay: Boolean): Pair
         else -> GradSunnyTop to GradSunnyBottom
     }
 
+// ─── Shared clock ─────────────────────────────────────────────────────────────
+
+/**
+ * Seconds since this composable entered the screen, ticking every frame and never
+ * wrapping. Looping animations (infiniteTransition + RepeatMode.Restart) jump back to
+ * the start each cycle, which made rain and snow particles teleport — the flicker.
+ * A continuous clock lets particles wrap individually with `% 1f` instead.
+ */
+@Composable
+private fun rememberElapsedSeconds(): State<Float> {
+    val elapsed = remember { mutableFloatStateOf(0f) }
+    LaunchedEffect(Unit) {
+        val start = withFrameNanos { it }
+        while (true) {
+            withFrameNanos { now -> elapsed.floatValue = (now - start) / 1_000_000_000f }
+        }
+    }
+    return elapsed
+}
+
 // ─── Rain ─────────────────────────────────────────────────────────────────────
 
 data class RainDrop(val x: Float, val startY: Float, val speed: Float, val length: Float, val alpha: Float)
@@ -105,15 +125,11 @@ fun RainAnimation() {
             )
         }
     }
-    val infiniteTransition = rememberInfiniteTransition(label = "rain")
-    val time by infiniteTransition.animateFloat(
-        initialValue = 0f, targetValue = 1f,
-        animationSpec = infiniteRepeatable(tween(1000, easing = LinearEasing), RepeatMode.Restart),
-        label = "rainTime"
-    )
+    val time = rememberElapsedSeconds()
     Canvas(modifier = Modifier.fillMaxSize()) {
+        val t = time.value
         drops.forEach { drop ->
-            val y = ((drop.startY + time * (1000f / drop.speed)) % 1f) * size.height
+            val y = ((drop.startY + t * (1000f / drop.speed)) % 1f) * size.height
             drawLine(
                 color = Color.White.copy(alpha = drop.alpha),
                 start = Offset(drop.x * size.width, y),
@@ -142,15 +158,11 @@ fun SnowAnimation() {
             )
         }
     }
-    val infiniteTransition = rememberInfiniteTransition(label = "snow")
-    val time by infiniteTransition.animateFloat(
-        initialValue = 0f, targetValue = 1f,
-        animationSpec = infiniteRepeatable(tween(3000, easing = LinearEasing), RepeatMode.Restart),
-        label = "snowTime"
-    )
+    val time = rememberElapsedSeconds()
     Canvas(modifier = Modifier.fillMaxSize()) {
+        val t = time.value
         flakes.forEach { flake ->
-            val progress = (flake.startY + time * (3000f / flake.speed)) % 1f
+            val progress = (flake.startY + t * (1000f / flake.speed)) % 1f
             val x = (flake.x + flake.drift * progress * 20f).coerceIn(0f, 1f) * size.width
             val y = progress * size.height
             drawCircle(
@@ -202,7 +214,9 @@ fun CloudDriftAnimation(count: Int = 3, alpha: Float = 0.08f) {
     val infiniteTransition = rememberInfiniteTransition(label = "clouds")
     val offsets = (0 until count).map { i ->
         infiniteTransition.animateFloat(
-            initialValue = -0.3f,
+            // Start fully off-screen (cloud width is 0.4 + i * 0.1 of the screen),
+            // so clouds slide in instead of popping into view mid-screen.
+            initialValue = -(0.45f + i * 0.1f),
             targetValue = 1.1f,
             animationSpec = infiniteRepeatable(
                 tween((20000 + i * 4000), easing = LinearEasing),

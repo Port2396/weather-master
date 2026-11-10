@@ -3,6 +3,19 @@
 All notable changes to "What's the Weather" are documented here.
 This project follows [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Fixed
+- **Background flicker** — rain and snow no longer jump every few seconds;
+  clouds slide in from off-screen instead of popping in.
+- **Background flash on refresh** — the background keeps the current weather
+  while loading instead of flashing to "sunny".
+- **Wrong city after fast swipes** — switching cities cancels the previous
+  request, so a slow response can't show another city's weather.
+
+### Changed
+- CI now builds on `main` (it was set to `master` and never ran).
+
 ## [1.1.0] — 2026-06-11
 
 First working, polished build. The app now builds, runs, and the settings

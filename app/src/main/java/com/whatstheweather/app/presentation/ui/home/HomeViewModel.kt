@@ -16,6 +16,7 @@ import com.whatstheweather.app.domain.usecase.GetCurrentWeatherUseCase
 import com.whatstheweather.app.domain.usecase.ManageCityUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.util.Locale
@@ -58,8 +59,13 @@ class HomeViewModel @Inject constructor(
         }
     }
 
+    private var loadJob: Job? = null
+
     fun loadWeather(city: City, forceRefresh: Boolean = false) {
-        viewModelScope.launch {
+        // Cancel any in-flight load so a slow response for a previous city
+        // can't overwrite the city the user is now looking at.
+        loadJob?.cancel()
+        loadJob = viewModelScope.launch {
             _uiState.value = HomeUiState.Loading
             getWeatherUseCase(city, forceRefresh).collect { result ->
                 _uiState.value = result.fold(
