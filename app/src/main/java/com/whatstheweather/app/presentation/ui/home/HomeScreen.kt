@@ -72,9 +72,16 @@ fun HomeScreen(
         }
     }
 
-    // Get weather condition for background
-    val condition = (uiState as? HomeUiState.Success)?.weatherData?.condition ?: WeatherCondition.CLEAR_SKY
-    val actualIsDay = (uiState as? HomeUiState.Success)?.weatherData?.isDay ?: true
+    // Get weather condition for background. Keep the last known condition while a
+    // refresh/city switch is loading, so the background doesn't flash to "sunny" and back.
+    var lastCondition by remember { mutableStateOf(WeatherCondition.CLEAR_SKY) }
+    var lastIsDay by remember { mutableStateOf(true) }
+    (uiState as? HomeUiState.Success)?.weatherData?.let {
+        lastCondition = it.condition
+        lastIsDay = it.isDay
+    }
+    val condition = lastCondition
+    val actualIsDay = lastIsDay
     // Light/Dark theme overrides the background's day/night look; System follows real time of day.
     val isDay = when (settings.theme) {
         AppTheme.LIGHT -> true
