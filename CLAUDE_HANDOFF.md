@@ -221,7 +221,7 @@ Known minor issue: no theme quick-toggle on the home screen (only the Settings c
 | May 8–20, 2026 | Android Studio + SDK installed, repo pushed to GitHub. First successful build after switching Java 26 → 17; fixed pull-to-refresh API. |
 | May 21, 2026 | Settings wired up: units, time format, theme. Cache duration setting removed. |
 | Jun 11, 2026 | **v1.1.0**: Outfit/Inter fonts, spacing, card shadows, brighter icons, background fade, animation toggle, theme drives day/night background. Removed broken Advanced Settings (API provider/keys). Added CHANGELOG. |
-| Nov 11, 2026 | Background flicker fix + CI fixed (branch `claude/festive-allen-9n3abt`). Project moved to `~/Documents/Weatherapp`; fixed "Incompatible Gradle JVM" by setting Gradle JDK to 17. User now on Kubuntu (was CachyOS). |
+| Nov 11, 2026 | Background flicker fix + CI fixed (branch `claude/festive-allen-9n3abt`). Project moved to `~/Documents/Weatherapp`; fixed "Incompatible Gradle JVM" (Gradle daemon now pinned to JBR 21). User now on Kubuntu (was CachyOS). |
 
 ---
 
