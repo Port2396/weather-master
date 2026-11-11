@@ -22,7 +22,13 @@
 - **OS:** **Kubuntu** (Ubuntu + KDE) — package manager `apt`.
   Switched from CachyOS (Arch) in late 2026: ignore any `yay` / `archlinux-java`
   commands in old notes or git history.
-- **IDE:** Android Studio. Also uses Google Antigravity.
+- **Workflow:** writes code in **Google Antigravity** (VS Code-based) with the
+  official **Claude Code extension** (chat panel, signs in with the user's Claude
+  plan); runs the app in **Android Studio** on the emulator.
+- **Android Studio's own Agent panel ("Claude Agent" / claude-acp) does NOT work
+  for this user:** it only accepts an `ANTHROPIC_API_KEY` (pay-per-use) and fails
+  with "Credit balance is too low". Use Antigravity + Claude extension, or run
+  `claude` in Android Studio's Terminal tab, instead.
 - **Emulator:** Pixel 7A, API 35 (set up on the old OS — may need recreating).
 - **Prefers:** simple, clear explanations; honest feedback.
 
