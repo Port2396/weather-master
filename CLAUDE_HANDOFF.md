@@ -19,9 +19,11 @@
 ## 👤 User Context
 
 - **Name:** Ahmet (GitHub: `Port2396`)
-- **OS:** CachyOS (Arch-based), KDE. AUR helper: `yay`.
-- **IDE:** Android Studio (at `/opt/android-studio/`), with the Claude agent panel.
-- **Emulator:** Pixel 7A, API 35.
+- **OS:** **Kubuntu** (Ubuntu + KDE) — package manager `apt`.
+  Switched from CachyOS (Arch) in late 2026: ignore any `yay` / `archlinux-java`
+  commands in old notes or git history.
+- **IDE:** Android Studio. Also uses Google Antigravity.
+- **Emulator:** Pixel 7A, API 35 (set up on the old OS — may need recreating).
 - **Prefers:** simple, clear explanations; honest feedback.
 
 ---
@@ -32,19 +34,27 @@
   `~/Documents/Antigravity/Open Source App Forks/weather-master/`)
 - **GitHub:** `https://github.com/Port2396/weather-master` (default branch `main`)
 - `local.properties` (not in git): `sdk.dir=/home/ahmet/Android/Sdk`
+  (path from the old OS — Android Studio fixes it on first open if wrong)
 
 ---
 
 ## ⚙️ Environment — Read This If The Build Fails
 
-**The project needs Java 17 to run Gradle.** Gradle 8.10.2 cannot run on Java 25/26.
+**Gradle must run on Java 17–21.** Gradle 8.10.2 cannot run on Java 25/26
+(Android Studio's embedded runtime is JBR 25).
 
-- Symptom: *"Incompatible Gradle JVM version … Gradle 8.10.2 is incompatible with
-  the Gradle JVM version 25"*. Happens whenever the project is opened in a new
-  folder, because Android Studio falls back to its embedded JetBrains Runtime 25.
-- Fix: **Settings → Build, Execution, Deployment → Build Tools → Gradle → Gradle JDK
-  → `java-17-openjdk`** (`/usr/lib/jvm/java-17-openjdk`), then re-sync.
-- If missing: `yay -S jdk17-openjdk`.
+- The Gradle daemon JVM is now pinned in `gradle/gradle-daemon-jvm.properties`
+  (JetBrains Runtime 21). Android Studio downloads it to `~/.jdks/jbr-21.*`.
+  The `foojay-resolver-convention` plugin in `settings.gradle.kts` lets Gradle
+  download JDK toolchains on its own.
+- Old symptom: *"Incompatible Gradle JVM version … Gradle 8.10.2 is incompatible
+  with the Gradle JVM version 25"*. If it comes back: **Settings → Build,
+  Execution, Deployment → Build Tools → Gradle → Gradle JDK → JBR 21 (or any
+  JDK 17/21)**, then re-sync.
+  To install a system JDK on Kubuntu: `sudo apt install openjdk-17-jdk`
+  (`/usr/lib/jvm/java-17-openjdk-amd64`).
+- Command line: the `gradlew` launcher also needs a JDK 17–21, e.g.
+  `JAVA_HOME=~/.jdks/jbr-21.0.11 ./gradlew assembleDebug`.
 - **Don't** accept Android Studio's "upgrade Gradle / AGP" prompts casually —
   AGP 8.7.3 is pinned to work with Gradle 8.10.2. Upgrading is a separate task.
 
@@ -195,7 +205,9 @@ Known minor issue: no theme quick-toggle on the home screen (only the Settings c
 
 ## 🔑 Git
 
-- Remote: `git@github.com:Port2396/weather-master.git` (SSH). GitHub Desktop also installed.
+- Remote: `git@github.com:Port2396/weather-master.git` (SSH). The SSH key was set up
+  on the old OS — if push fails with "Permission denied (publickey)", a new key
+  needs adding to GitHub.
 - Get the latest work branch:
   `git fetch origin && git checkout claude/festive-allen-9n3abt`
 
@@ -209,7 +221,7 @@ Known minor issue: no theme quick-toggle on the home screen (only the Settings c
 | May 8–20, 2026 | Android Studio + SDK installed, repo pushed to GitHub. First successful build after switching Java 26 → 17; fixed pull-to-refresh API. |
 | May 21, 2026 | Settings wired up: units, time format, theme. Cache duration setting removed. |
 | Jun 11, 2026 | **v1.1.0**: Outfit/Inter fonts, spacing, card shadows, brighter icons, background fade, animation toggle, theme drives day/night background. Removed broken Advanced Settings (API provider/keys). Added CHANGELOG. |
-| Nov 11, 2026 | Background flicker fix + CI fixed (branch `claude/festive-allen-9n3abt`). Project moved to `~/Documents/Weatherapp`; fixed "Incompatible Gradle JVM" by setting Gradle JDK to 17. |
+| Nov 11, 2026 | Background flicker fix + CI fixed (branch `claude/festive-allen-9n3abt`). Project moved to `~/Documents/Weatherapp`; fixed "Incompatible Gradle JVM" (Gradle daemon now pinned to JBR 21). User now on Kubuntu (was CachyOS). |
 
 ---
 

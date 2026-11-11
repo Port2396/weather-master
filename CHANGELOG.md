@@ -15,6 +15,9 @@ This project follows [Semantic Versioning](https://semver.org/).
 
 ### Changed
 - CI now builds on `main` (it was set to `master` and never ran).
+- Gradle daemon pinned to JetBrains Runtime 21 (`gradle-daemon-jvm.properties`)
+  and the foojay toolchain resolver added, so opening the project no longer
+  fails with "Incompatible Gradle JVM". Shared Kotlin code style checked in.
 
 ## [1.1.0] — 2026-06-11
 
